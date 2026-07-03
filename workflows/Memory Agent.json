@@ -1,0 +1,317 @@
+{
+  "name": "MemoryOS AI",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c6744dce-9d1e-4761-9f49-25c1fe8cc1da",
+              "name": "Person",
+              "value": "John",
+              "type": "string"
+            },
+            {
+              "id": "01fb63a2-3d95-4831-b5ca-4548c7ab07a4",
+              "name": "Company",
+              "value": "ABC Logistics",
+              "type": "string"
+            },
+            {
+              "id": "bb93e60a-b7f8-47d6-be38-95dc04b87d26",
+              "name": "Need",
+              "value": "AI Automation",
+              "type": "string"
+            },
+            {
+              "id": "f400f5f3-3ee6-4d18-a55c-dca95ecc18f1",
+              "name": "Budget",
+              "value": "20000",
+              "type": "string"
+            },
+            {
+              "id": "e4abe7ef-7013-40b2-858a-33d46c4b6ae0",
+              "name": "Meeting",
+              "value": "Friday",
+              "type": "string"
+            },
+            {
+              "id": "24cdbafa-b13c-4dd6-8c06-e823eb00d3f0",
+              "name": "textData",
+              "value": "={{\n[\n  `Person: ${$json.output.person}`,\n  `Role: ${$json.output.role}`,\n  `Company: ${$json.output.company}`,\n  `Industry: ${$json.output.industry}`,\n  `Need: ${$json.output.need}`,\n  `Budget: ${$json.output.budget}`,\n  `Priority: ${$json.output.priority}`,\n  `Follow-up: ${$json.output.follow_up_date}`,\n  `Next Action: ${$json.output.next_action}`,\n  `${$json.output.person} works at ${$json.output.company}.`,\n  `${$json.output.company} needs ${$json.output.need}.`,\n  `${$json.output.summary}`\n]\n}}",
+              "type": "array"
+            },
+            {
+              "id": "d5d10bfc-3728-4587-8c35-380aa1f25e7b",
+              "name": "test",
+              "value": "=={{ $json }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        0
+      ],
+      "id": "de74fa01-56e4-4ef2-acbf-6bdf48bf64eb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tenant-74bd3257-b37c-4f09-a9fe-c2b1931f4fe5.aws.cognee.ai/api/v1/add_text",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "932b363c45c8690ec63a7cccdb3cf884e3fb1080c329e17c64bf6530a590b74c"
+            },
+            {
+              "name": "X-Tenant-Id",
+              "value": "74bd3257-b37c-4f09-a9fe-c2b1931f4fe5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"textData\": $json.textData,\n  \"datasetName\": \"BusinessMemory\",\n  \"nodeSet\": [\"BusinessMemory\"]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        768,
+        0
+      ],
+      "id": "3e20f56e-1e92-4a5b-9d7b-78397be13adc",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tenant-74bd3257-b37c-4f09-a9fe-c2b1931f4fe5.aws.cognee.ai/api/v1/cognify",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "932b363c45c8690ec63a7cccdb3cf884e3fb1080c329e17c64bf6530a590b74c"
+            },
+            {
+              "name": "X-Tenant-Id",
+              "value": "74bd3257-b37c-4f09-a9fe-c2b1931f4fe5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"datasets\": [\n    \"BusinessMemory\"\n  ],\n  \"datasetIds\": [],\n  \"runInBackground\": false,\n  \"graphModel\": {},\n  \"customPrompt\": \"\",\n  \"chunkSize\": null,\n  \"ontologyKey\": [],\n  \"chunksPerBatch\": null,\n  \"dataPerBatch\": 20\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        992,
+        0
+      ],
+      "id": "59429457-b10d-4a20-8e51-d5831a5a0829",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "64e4bd0a-fe61-4abd-a88e-22797dbbb44c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        0
+      ],
+      "id": "e5885259-5a94-44a2-aa84-1ca49c28e6ac",
+      "name": "Webhook",
+      "webhookId": "64e4bd0a-fe61-4abd-a88e-22797dbbb44c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extract business knowledge from this conversation.\n\nConversation:\n{{ $json.transcript }}\n\nReturn ONLY valid JSON using the required schema.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are MemoryOS, an AI Business Memory Extraction Agent.\n\nYour job is to convert business conversations into structured knowledge.\n\nReturn ONLY valid JSON.\n\nSchema:\n\n{\n  \"person\": \"\",\n  \"role\": \"\",\n  \"company\": \"\",\n  \"industry\": \"\",\n  \"email\": \"\",\n  \"phone\": \"\",\n  \"need\": \"\",\n  \"pain_points\": [],\n  \"budget\": \"\",\n  \"meeting_date\": \"\",\n  \"follow_up_date\": \"\",\n  \"priority\": \"\",\n  \"next_action\": \"\",\n  \"summary\": \"\"\n}\n\nRules:\n\n- Never explain.\n- Never use markdown.\n- Return JSON only.\n- Unknown fields should be empty strings or empty arrays."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "4997adf5-70f2-49f3-8e18-8fddadce3c8b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        224
+      ],
+      "id": "e40b8c01-1e73-48f9-803c-1a21973727d3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "4GzWnpW40q6H8z4X",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Memory stored successfully.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "559838da-ec92-43ae-b88d-6a5c76da2ccc",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"person\": {\n      \"type\": \"string\"\n    },\n    \"role\": {\n      \"type\": \"string\"\n    },\n    \"company\": {\n      \"type\": \"string\"\n    },\n    \"industry\": {\n      \"type\": \"string\"\n    },\n    \"email\": {\n      \"type\": \"string\"\n    },\n    \"phone\": {\n      \"type\": \"string\"\n    },\n    \"need\": {\n      \"type\": \"string\"\n    },\n    \"budget\": {\n      \"type\": \"string\"\n    },\n    \"meeting_date\": {\n      \"type\": \"string\"\n    },\n    \"follow_up_date\": {\n      \"type\": \"string\"\n    },\n    \"priority\": {\n      \"type\": \"string\"\n    },\n    \"next_action\": {\n      \"type\": \"string\"\n    },\n    \"summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"person\",\n    \"company\",\n    \"need\",\n    \"summary\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "877294be-ef5c-4b7c-9a26-ad3fa4c17503",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "transcript": "Yesterday I met John Smith, CEO of ABC Logistics. They need an AI customer support chatbot, have a budget of $20,000, and want a proposal by Friday."
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0315a749-7988-47f0-9ca5-ef79aa4b3632",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7a2ae5d83d78272e332c990bca73d2a3fc98e2e37dd6a3f1a648d00a45ee69fe"
+  },
+  "nodeGroups": [],
+  "id": "i4h0ACr7RvDrJo3p",
+  "tags": []
+}

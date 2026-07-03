@@ -1,0 +1,180 @@
+{
+  "name": "Recall agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e289cddb-175e-40a4-8297-3cff7f156897",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0ef3fc02-d009-4909-98a9-2294739a33c1",
+      "name": "Webhook",
+      "webhookId": "e289cddb-175e-40a4-8297-3cff7f156897"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tenant-74bd3257-b37c-4f09-a9fe-c2b1931f4fe5.aws.cognee.ai/api/v1/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "932b363c45c8690ec63a7cccdb3cf884e3fb1080c329e17c64bf6530a590b74c"
+            },
+            {
+              "name": "X-Tenant-Id",
+              "value": "74bd3257-b37c-4f09-a9fe-c2b1931f4fe5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"searchType\": \"GRAPH_COMPLETION\",\n  \"datasets\": [\n    \"BusinessMemory\"\n  ],\n  \"query\": $json.question,\n  \"systemPrompt\": \"Answer ONLY using the stored business memory. If the answer isn't found, say you don't know.\",\n  \"topK\": 10,\n  \"onlyContext\": false,\n  \"verbose\": false,\n  \"includeReferences\": false\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "b0da8915-a91f-44f9-86ee-b06b5f101de9",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Question:\n\n{{ $json.question }}\n\nSearch Results:\n\n{{ JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are MemoryOS.\n\nYou receive search results from Cognee.\n\nAnswer naturally, professionally, and concisely.\n\nNever invent information.\n\nIf the memory doesn't exist, clearly say you couldn't find it."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "87bb2e7e-d238-466f-9d65-4f85ed9488ae",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "=\"{{$json}}\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        848,
+        0
+      ],
+      "id": "6a16f80d-8d57-4796-ba44-763bc9445fe7",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        208
+      ],
+      "id": "f292d3a6-54d8-4656-97d2-2b1b7aa28a26",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "4GzWnpW40q6H8z4X",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "question": "Who has a budget of $20,000?"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8ab61bf4-eab1-4f32-86ed-fab7c5d0ce35",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7a2ae5d83d78272e332c990bca73d2a3fc98e2e37dd6a3f1a648d00a45ee69fe"
+  },
+  "nodeGroups": [],
+  "id": "s1cIwGsUfvXQASGV",
+  "tags": []
+}
